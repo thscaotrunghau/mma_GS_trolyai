@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+      body { 
+        font-family: 'Inter', sans-serif; 
+        padding: 12px; 
+        background-color: #f8f9fa;
+        color: #333;
+      }
+      .container { display: flex; flex-direction: column; gap: 10px; }
+      h3 { margin: 0 0 5px 0; color: #1a73e8; font-size: 16px;}
+      label { font-size: 12px; font-weight: 600; color: #555; }
+      
+      input, select { 
+        padding: 6px 8px; 
+        border-radius: 6px; 
+        border: 1px solid #dadce0; 
+        width: 100%; 
+        box-sizing: border-box; 
+        font-family: inherit;
+        font-size: 13px;
+      }
+      
+      .row { display: flex; gap: 8px; }
+      .col { flex: 1; }
+      
+      .btn { 
+        padding: 8px; 
+        border-radius: 6px; 
+        border: none; 
+        cursor: pointer; 
+        font-weight: 600; 
+        font-size: 13px;
+        transition: background 0.2s;
+        width: 100%;
+        color: white;
+      }
+      .btn-primary { background-color: #1a73e8; }
+      .btn-secondary { background-color: #188038; }
+      
+      .btn-ctrl { background-color: #9c27b0; font-size: 11px; padding: 6px 4px; margin-top: 4px; color: white; border: none; border-radius: 4px; cursor: pointer; flex: 1;}
+      .btn-ctrl.pause { background-color: #ed6c02; }
+      .btn-ctrl.stop { background-color: #d32f2f; }
+      
+      .text-box { 
+        position: relative;
+        height: 120px; 
+        overflow-y: auto; 
+        padding: 8px; 
+        border-radius: 6px; 
+        border: 1px solid #dadce0; 
+        font-family: inherit;
+        font-size: 13px;
+        line-height: 1.5;
+        width: 100%;
+        box-sizing: border-box;
+        background: #fff;
+        white-space: pre-wrap; 
+        word-wrap: break-word;
+      }
+      
+      .highlight {
+        background-color: #ffeb3b;
+        color: #000;
+        border-radius: 3px;
+        padding: 2px 0px;
+        box-shadow: 0 0 3px rgba(255, 235, 59, 0.8);
+        font-weight: 600;
+      }
+      
+      .loader { 
+        display: none; 
+        text-align: center; 
+        color: #1a73e8; 
+        font-size: 12px; 
+        font-weight: 500;
+        margin: 5px 0;
+      }
+      
+      .section-card {
+        background: white;
+        padding: 8px;
+        border-radius: 8px;
+        border: 1px solid #e0e0e0;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      }
+      
+      .controls-row {
+        display: none;
+        gap: 4px;
+        margin-top: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div style="text-align: center;">
+        <h3>🤖 MMA - Trợ Lý AI GS</h3>
+        <div style="font-size: 11px; margin-top: -2px; margin-bottom: 8px;">
+          Design by <a href="https://www.thayhauai.com" target="_blank" style="color: #1a73e8; text-decoration: none; font-weight: 600;">ThayHauAI.com</a>
+        </div>
+      </div>
+      
+      <div class="row">
+        <div class="col">
+          <label>Mã API DeepSeek:</label>
+          <input type="password" id="apiKey" placeholder="sk-...">
+        </div>
+      </div>
+      
+      <div class="row">
+        <div class="col">
+          <label>Ngôn ngữ Gốc:</label>
+          <select id="sourceLang">
+            <option value="en-US">Tiếng Anh</option>
+            <option value="vi-VN">Tiếng Việt</option>
+            <option value="ja-JP">Tiếng Nhật</option>
+            <option value="zh-CN">Tiếng Trung</option>
+          </select>
+        </div>
+        <div class="col">
+          <label>Dịch sang:</label>
+          <select id="targetLang">
+            <option value="vi-VN">Tiếng Việt</option>
+            <option value="en-US">Tiếng Anh</option>
+            <option value="ja-JP">Tiếng Nhật</option>
+            <option value="zh-CN">Tiếng Trung</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="row" style="margin-top: -4px;">
+        <div class="col">
+          <label>Tốc độ đọc giọng AI:</label>
+          <select id="readSpeed">
+            <option value="0.6">Rất chậm (0.6x)</option>
+            <option value="0.8">Chậm (0.8x)</option>
+            <option value="0.95" selected>Tiêu chuẩn (0.95x)</option>
+            <option value="1.1">Nhanh (1.1x)</option>
+            <option value="1.3">Rất nhanh (1.3x)</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="row">
+        <button class="btn btn-primary" onclick="executeAction('translate')">🌐 Dịch</button>
+        <button class="btn btn-secondary" onclick="executeAction('explain')">💡 Giải thích</button>
+      </div>
+      <div class="row">
+        <button class="btn" style="background-color: #e91e63;" onclick="startAutoPresenter()">🚀 Tự Động Thuyết Trình</button>
+      </div>
+      
+      <div id="loader" class="loader">⏳ AI đang phân tích...</div>
+      
+      <!-- NỘI DUNG GỐC -->
+      <div class="section-card">
+        <label>📄 Nội dung gốc:</label>
+        <div id="originalText" class="text-box">Nội dung bạn bôi đen sẽ hiển thị ở đây...</div>
+        <div class="controls-row" id="ctrlOrig">
+           <button class="btn-ctrl" onclick="playAudio('originalText', 'sourceLang')">🔊 Đọc</button>
+           <button class="btn-ctrl pause" onclick="pauseAudio()">⏸ Tạm dừng</button>
+           <button class="btn-ctrl stop" onclick="stopAudio()">⏹ Dừng</button>
+        </div>
+      </div>
+
+      <!-- NỘI DUNG AI DỊCH -->
+      <div class="section-card">
+        <label>✨ Kết quả từ AI:</label>
+        <div id="result" class="text-box">Kết quả dịch/giải thích sẽ hiển thị ở đây...</div>
+        <div class="controls-row" id="ctrlRes">
+           <button class="btn-ctrl" onclick="playAudio('result', 'targetLang')">🔊 Đọc</button>
+           <button class="btn-ctrl pause" onclick="pauseAudio()">⏸ Tạm dừng</button>
+           <button class="btn-ctrl stop" onclick="stopAudio()">⏹ Dừng</button>
+        </div>
+      </div>
+      
+    </div>
+
+    <script>
+      let synth = window.speechSynthesis;
+      let globalVoices = [];
+      let currentRawTextOrig = "";
+      let currentRawTextRes = "";
+      
+      // Auto Presenter State
+      let autoSlidesData = [];
+      let autoCurrentIndex = 0;
+      let isAutoPresenterMode = false;
+      let autoTargetLang = "";
+      let autoApiKey = "";
+      
+      function loadVoices() {
+        if (synth) {
+          globalVoices = synth.getVoices();
+        }
+      }
+      if (synth) {
+        synth.onvoiceschanged = loadVoices;
+        loadVoices();
+      }
+      
+      google.script.run.withSuccessHandler(function(key) {
+        if(key) document.getElementById('apiKey').value = key;
+      }).getSavedApiKey();
+
+      // ================= CHẾ ĐỘ DỊCH THƯỜNG =================
+      function executeAction(action) {
+        var apiKey = document.getElementById('apiKey').value;
+        if (!apiKey) {
+          alert('Vui lòng nhập DeepSeek API Key (sk-...) để tiếp tục!');
+          return;
+        }
+        
+        var targetLangSelect = document.getElementById('targetLang');
+        var targetLangName = targetLangSelect.options[targetLangSelect.selectedIndex].text;
+        
+        stopAudio();
+        
+        document.getElementById('ctrlOrig').style.display = 'none';
+        document.getElementById('ctrlRes').style.display = 'none';
+        document.getElementById('loader').style.display = 'block';
+        document.getElementById('loader').innerText = "⏳ AI đang phân tích...";
+        document.getElementById('originalText').innerText = '';
+        document.getElementById('result').innerText = '';
+        
+        google.script.run
+          .withSuccessHandler(function(jsonString) {
+            document.getElementById('loader').style.display = 'none';
+            try {
+              var data = JSON.parse(jsonString);
+              if (data.error) {
+                document.getElementById('result').innerText = data.error;
+              } else {
+                currentRawTextOrig = data.originalText;
+                currentRawTextRes = data.aiResponse;
+                document.getElementById('originalText').innerText = currentRawTextOrig;
+                document.getElementById('result').innerText = currentRawTextRes;
+                
+                document.getElementById('ctrlOrig').style.display = 'flex';
+                document.getElementById('ctrlRes').style.display = 'flex';
+              }
+            } catch(e) {
+              document.getElementById('result').innerText = "❌ Lỗi đọc dữ liệu: " + jsonString;
+            }
+          })
+          .withFailureHandler(function(err) {
+            document.getElementById('loader').style.display = 'none';
+            document.getElementById('result').innerText = "❌ Lỗi: " + err.message;
+          })
+          .processRequest(action, apiKey, targetLangName);
+      }
+      
+      // ================= CHẾ ĐỘ AUTO PRESENTER =================
+      function startAutoPresenter() {
+         autoApiKey = document.getElementById('apiKey').value;
+         if (!autoApiKey) { alert('Vui lòng nhập API Key!'); return; }
+         
+         var targetLangSelect = document.getElementById('targetLang');
+         autoTargetLang = targetLangSelect.options[targetLangSelect.selectedIndex].text;
+         
+         stopAudio();
+         isAutoPresenterMode = true;
+         
+         document.getElementById('ctrlOrig').style.display = 'none';
+         document.getElementById('ctrlRes').style.display = 'none';
+         document.getElementById('loader').style.display = 'block';
+         document.getElementById('loader').innerText = "🔄 Đang tải toàn bộ nội dung Slide...";
+         
+         google.script.run
+           .withSuccessHandler(function(res) {
+              var data = JSON.parse(res);
+              if (data.error) {
+                 alert("Lỗi: " + data.error); 
+                 document.getElementById('loader').style.display = 'none';
+                 return;
+              }
+              autoSlidesData = data;
+              autoCurrentIndex = 0;
+              processNextAutoSlide();
+           })
+           .getAllSlidesData();
+      }
+
+      function processNextAutoSlide() {
+         if (!isAutoPresenterMode) return;
+         if (autoCurrentIndex >= autoSlidesData.length) {
+            alert("🎉 Đã hoàn thành trình chiếu toàn bộ các trang!");
+            isAutoPresenterMode = false;
+            document.getElementById('loader').style.display = 'none';
+            return;
+         }
+         
+         var text = autoSlidesData[autoCurrentIndex].text;
+         if (!text || text.trim() === "") {
+            autoCurrentIndex++;
+            processNextAutoSlide(); // Bỏ qua trang rỗng
+            return;
+         }
+         
+         // Chuyển slide trên Google Slides
+         google.script.run.goToSlide(autoSlidesData[autoCurrentIndex].slideIndex);
+         
+         document.getElementById('loader').style.display = 'block';
+         document.getElementById('loader').innerText = "⏳ Đang dịch Trang " + (autoSlidesData[autoCurrentIndex].slideIndex + 1) + "...";
+         document.getElementById('originalText').innerText = text;
+         document.getElementById('result').innerText = "";
+         
+         // Gọi AI Dịch
+         google.script.run
+           .withSuccessHandler(function(res) {
+              document.getElementById('loader').style.display = 'none';
+              try {
+                 var data = JSON.parse(res);
+                 if (data.error) {
+                    document.getElementById('result').innerText = data.error;
+                 } else {
+                    currentRawTextOrig = data.originalText;
+                    currentRawTextRes = data.aiResponse;
+                    document.getElementById('originalText').innerText = currentRawTextOrig;
+                    document.getElementById('result').innerText = currentRawTextRes;
+                    document.getElementById('ctrlOrig').style.display = 'flex';
+                    document.getElementById('ctrlRes').style.display = 'flex';
+                    
+                    // Phát âm thanh tự động bản gốc!
+                    playAudio('originalText', 'sourceLang'); 
+                 }
+              } catch(e) {
+                 document.getElementById('result').innerText = "Lỗi: " + res;
+              }
+           })
+           .withFailureHandler(function(err) {
+              document.getElementById('loader').style.display = 'none';
+              document.getElementById('result').innerText = "Lỗi: " + err.message;
+           })
+           .processTextDirectly(text, autoApiKey, autoTargetLang);
+      }
+      
+      // ================= XỬ LÝ AUDIO =================
+      function pauseAudio() {
+        if (synth.speaking && !synth.paused) {
+          synth.pause();
+        } else if (synth.paused) {
+          synth.resume();
+        }
+      }
+      
+      function stopAudio() {
+        synth.cancel();
+        isAutoPresenterMode = false; // Tắt Auto Presenter nếu người dùng bấm Dừng
+        resetAllHighlights();
+      }
+      
+      function highlightSentenceByProportion(elementId, fullText, proportion) {
+         if (!fullText) return;
+         var displayBox = document.getElementById(elementId);
+         
+         var targetCharIndex = Math.floor(fullText.length * proportion);
+         if (targetCharIndex >= fullText.length) targetCharIndex = fullText.length - 1;
+         
+         var parts = fullText.split(/([.?!;\n]+)/);
+         var before = "";
+         var current = "";
+         var after = "";
+         var currentLen = 0;
+         var found = false;
+         
+         for (var i = 0; i < parts.length; i += 2) {
+            var txt = parts[i] || "";
+            var punc = parts[i+1] || "";
+            var s = txt + punc;
+            
+            if (s === "") continue;
+            
+            var sLen = s.length;
+            
+            if (!found) {
+               if (targetCharIndex >= currentLen && targetCharIndex < currentLen + sLen) {
+                  current = s;
+                  found = true;
+               } else {
+                  before += s;
+               }
+            } else {
+               after += s;
+            }
+            currentLen += sLen;
+         }
+         
+         if (!found && before.length > 0) {
+            current = fullText;
+            before = "";
+            after = "";
+         }
+         
+         var formatHTML = function(t) {
+           return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+         };
+         
+         displayBox.innerHTML = formatHTML(before) + 
+                                '<span class="highlight">' + formatHTML(current) + '</span>' + 
+                                formatHTML(after);
+                                
+         var hlNode = displayBox.querySelector('.highlight');
+         if (hlNode) {
+           hlNode.scrollIntoView({ behavior: 'smooth', block: 'center' });
+         }
+      }
+      
+      function playAudio(elementId, langElementId) {
+        synth.cancel(); // Stop current speech
+        resetAllHighlights();
+        
+        var rawText = (elementId === 'originalText') ? currentRawTextOrig : currentRawTextRes;
+        var otherElementId = (elementId === 'originalText') ? 'result' : 'originalText';
+        var otherRawText = (elementId === 'originalText') ? currentRawTextRes : currentRawTextOrig;
+        
+        if (!rawText) return;
+        
+        var langCode = document.getElementById(langElementId).value;
+        var displayBox = document.getElementById(elementId);
+        var speedVal = parseFloat(document.getElementById('readSpeed').value);
+        
+        var utterThis = new SpeechSynthesisUtterance(rawText);
+        utterThis.lang = langCode;
+        utterThis.rate = speedVal;  
+        utterThis.pitch = 1.0; 
+        
+        var shortLang = langCode.split('-')[0];
+        if (globalVoices.length === 0) loadVoices();
+        
+        var selectedVoice = null;
+        selectedVoice = globalVoices.find(v => v.lang === langCode && (v.name.includes('Google') || v.name.includes('Natural') || v.name.includes('Microsoft')));
+        if (!selectedVoice) {
+          selectedVoice = globalVoices.find(v => v.lang.includes(shortLang) && (v.name.includes('Google') || v.name.includes('Natural')));
+        }
+        if (!selectedVoice) {
+          selectedVoice = globalVoices.find(v => v.lang.includes(shortLang));
+        }
+        if (selectedVoice) {
+          utterThis.voice = selectedVoice;
+        }
+        
+        // DUAL HIGHLIGHT & KARAOKE (THUẬT TOÁN PROPORTIONAL ALIGNMENT MỚI)
+        utterThis.onboundary = function(event) {
+          if (event.name === 'word' || event.name === 'sentence') {
+            var charIndex = event.charIndex;
+            var charLength = event.charLength;
+            
+            if (!charLength || charLength === 0) {
+              var sub = rawText.substring(charIndex);
+              var match = sub.match(/^[\w\u00C0-\u1FFF\u2C00-\uD7FF]+/);
+              charLength = match ? match[0].length : 1;
+            }
+            
+            var before = rawText.substring(0, charIndex);
+            var current = rawText.substring(charIndex, charIndex + charLength);
+            var after = rawText.substring(charIndex + charLength);
+            
+            var formatHTML = function(t) {
+              return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+            };
+            
+            displayBox.innerHTML = formatHTML(before) + 
+                                   '<span class="highlight">' + formatHTML(current) + '</span>' + 
+                                   formatHTML(after);
+                                   
+            var hlNode = displayBox.querySelector('.highlight');
+            if (hlNode) {
+              hlNode.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            
+            // Tính tỷ lệ % độ dài đang đọc để ánh xạ sang ngôn ngữ còn lại
+            var proportion = charIndex / rawText.length;
+            highlightSentenceByProportion(otherElementId, otherRawText, proportion);
+          }
+        };
+        
+        utterThis.onend = function() {
+          resetAllHighlights();
+          // Chuyển slide kế tiếp nếu đang ở chế độ Auto
+          if (isAutoPresenterMode) {
+             autoCurrentIndex++;
+             setTimeout(processNextAutoSlide, 1000);
+          }
+        };
+        
+        synth.speak(utterThis);
+      }
+      
+      function resetAllHighlights() {
+        if (currentRawTextOrig) document.getElementById('originalText').innerText = currentRawTextOrig;
+        if (currentRawTextRes) document.getElementById('result').innerText = currentRawTextRes;
+      }
+    </script>
+  </body>
+</html>
