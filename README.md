@@ -41,7 +41,16 @@ Yêu cầu: Máy tính đã cài đặt Python.
 
 ---
 
-## 🔑 Cấu hình
-Bạn cần có mã API Key của **DeepSeek** (bắt đầu bằng `sk-...`) để Trợ lý có thể hoạt động. Nhập mã này vào ô API Key trong giao diện, mã sẽ tự động được lưu lại cho các lần sử dụng sau.
+## 🔑 Cấu hình API Key DeepSeek
+Để Trợ lý có thể hoạt động (dịch thuật và phân tích), bạn cần có mã API Key của **DeepSeek**.
+
+**Cách lấy API Key miễn phí / giá rẻ:**
+1. Truy cập trang web chính thức: [https://platform.deepseek.com/](https://platform.deepseek.com/)
+2. Đăng ký một tài khoản hoặc Đăng nhập.
+3. Ở menu bên trái, tìm mục **API Keys**.
+4. Bấm vào nút **Create new API key** (Tạo khóa mới).
+5. Copy dãy mã vừa hiện ra (bắt đầu bằng chữ `sk-...`).
+6. Dán dãy mã này vào ô **Mã API DeepSeek** trong giao diện Trợ Lý AI của bạn.
+7. *Lưu ý: Bạn chỉ cần nhập 1 lần đầu tiên, hệ thống sẽ tự động ghi nhớ cho các lần sử dụng sau!*
 
 *Chúc các bạn có những buổi thuyết trình thật sự thăng hoa cùng MMA AI!* 🚀
